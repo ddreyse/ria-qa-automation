@@ -12,7 +12,7 @@ UI end-to-end tests using **Selenium WebDriver, JavaScript and Mocha**, plus a *
 | CALC-03 | Convert 25,000 CLP to HTG and validate the received amount | **PASS** |
 | CALC-04 | Updating the send amount updates the conversion | **PASS** |
 | REG-01 | Get Started opens the secure RIA site; registration link, phone/email and password fields are visible | **PASS** |
-| REG-02 | Register opens the country-selection page | **NOT VERIFIED** - Regional restriction observed from Chile; marked pending when explicitly configured. |
+| REG-02 | Register opens the country-selection page | **FAIL (BLOCKED)** - RIA explicitly prevents account registration from Chile. The test detects the restriction and reports a descriptive failure. |
 | SMOKE | Public RIA page loads | **PASS** - Additional infrastructure check. |
 | API-GET | GET `/posts/`: status 200, nonempty titles/bodies, no `zombie` | **PASS** - 4 Postman assertions. |
 | API-POST | POST `/post`: status 200/201, required toppings, no `chicken` | **PASS** - 4 Postman assertions. |
@@ -46,12 +46,7 @@ npm run test:registration
 
 On Windows PowerShell, use `npm.cmd` for the commands above if needed.
 
-For executions from the Chilean environment where the registration-country flow is unavailable:
-
-```powershell
-$env:RIA_REGISTRATION_BLOCKED = '1'
-npm.cmd test
-```
+Without the flag, REG-02 executes its full assertion and may fail in that environment.
 
 This flag **explicitly skips REG-02** after navigation to registration. It does not validate the country-selection page and does not automatically detect a regional restriction. Without the flag, REG-02 executes its full assertion and may fail in that environment.
 
@@ -84,7 +79,56 @@ The POST request uses the JSON body specified in the challenge, including the to
 - **Conversion assertion:** CALC-03 checks the received amount against the rate displayed by RIA, using a tolerance for rate precision and rounding. The test does not use a hard-coded exchange rate.
 - **Transparent results:** Failed and unverified acceptance criteria are reported, not converted into artificial passes.
 
-## Execution results - November 16, 2026
+## Execution results
+
+### Selenium
+
+The latest complete execution on November 16, 2026 reported 6 passing, 1 failing and 1 pending.
+
+On November 17, 2026, REG-02 was updated and executed independently. It now detects the regional registration restriction and reports a descriptive failure instead of being skipped.
+
+The complete Selenium suite was executed on November 17, 2026.
+
+Results: 6 passed, 2 failed.
+
+CALC-01: The application does not display the required validation message.
+
+REG-02: Account registration is blocked from Chile. The test detects the regional restriction and reports a descriptive failure.
+
+Both failures are documented in docs/QA_NOTES.md.
+
+### Postman
+
+- 8 assertions passed.
+- 0 failures.
+
+### Conversion validation
+
+During testing, RIA displayed a promotional exchange rate of **0.131066 HTG per CLP**.
+
+For 25,000 CLP, the calculator returned **3,276.65 HTG**, matching the displayed rate.
+
+This is a recorded test result, not a fixed exchange rate.
+
+### Findings and limitations
+
+**CALC-01 - Requirement discrepancy**
+
+Entering alphabetic characters (`abc`) leaves the amount field empty. The required message `Please enter a valid amount` is not displayed, even after the field loses focus.
+
+**REG-02 - Regional restriction**
+
+RIA displays the following message:
+
+"No se ha podido registrar la cuenta. Según tu ubicación actual, no puedes registrar una cuenta en Chile."
+
+The automated test detects this restriction and reports:
+
+`REG-02 BLOCKED: Registration is unavailable from Chile.`
+
+The country-selection acceptance criterion remains unverified because the application prevents continuing from the tested location.
+
+Further details are available in `docs/QA_NOTES.md`.
 
 **Selenium:** 6 passing, 1 failing (CALC-01), 1 pending (REG-02, explicitly skipped using `RIA_REGISTRATION_BLOCKED=1`). The six passing tests include the additional CALC-01B and SMOKE checks.
 

@@ -58,9 +58,24 @@ describe('RIA registration navigation', function () {
   it('REG-02 | Register opens country selection', async function () {
     await registration.clickRegister();
 
-    if (process.env.RIA_REGISTRATION_BLOCKED === '1') {
-      console.log('BLOCKED: Registration unavailable from Chile.');
-      this.skip();
+    const isRegionBlocked = await driver.wait(
+      async () => {
+        const text = await driver.executeScript(
+          'return document.body.innerText'
+        );
+
+        return /no puedes registrar\s+una cuenta en Chile/i.test(text);
+      },
+      5000
+    ).catch(error => {
+      if (error.name === 'TimeoutError') return false;
+      throw error;
+    });
+
+    if (isRegionBlocked) {
+      assert.fail(
+        'REG-02 BLOCKED: Registration is unavailable from Chile.'
+      );
     }
 
     const countrySelection = await registration.waitForCountrySelection();

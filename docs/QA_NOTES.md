@@ -35,7 +35,7 @@
 | CALC-03 | PASS | 25,000 CLP converted to 3,276.65 HTG using the displayed promotional rate of 0.131066. |
 | CALC-04 | PASS | Converted amount updates when the sending amount changes. |
 | REG-01 | PASS | Secure navigation and required login elements validated. |
-| REG-02 | BLOCKED | Registration restriction observed from Chile. Test marked pending through environment configuration. |
+| REG-02 | BLOCKED (FAIL) | RIA explicitly prevents account registration from Chile. The expected country selection page cannot be reached. |
 | SMOKE | PASS | RIA homepage loads successfully. |
 | API-GET | PASS | All four Postman assertions passed. |
 | API-POST | PASS | All four Postman assertions passed. |
@@ -44,7 +44,7 @@
 
 **CALC-01:** The application rejects alphabetic characters without displaying the exact validation message required by the acceptance criteria. The original assertion remains unchanged.
 
-**REG-02:** Registration was restricted from the tested Chilean environment. The scenario has not been functionally validated.
+**REG-02:** Registration is blocked by RIA based on the user's geographic location. The application displays: "Según tu ubicación actual, no puedes registrar una cuenta en Chile". The test detects this restriction and reports a descriptive failure. This is an environment limitation, not a confirmed application defect.
 
 ### Test Evidence
 

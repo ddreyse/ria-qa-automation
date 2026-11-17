@@ -26,7 +26,6 @@ class CalculatorPage {
     await this.driver.get(ORIGIN);
     await dismissCookies(this.driver);
 
-    // Ensure calculator is ready before interacting.
     await this.amountInput();
   }
 
@@ -70,15 +69,13 @@ class CalculatorPage {
     const input = await this.amountInput();
     await replaceText(input, amount);
   }
+
   async updateAmountAndWaitForQuote(amount) {
 
-    // Capture the previous received amount
     const previousReceived = await this.receivedAmount();
 
-    // Update sending amount
     await this.enterAmount(amount);
 
-    // Verify input was updated correctly
     await this.driver.wait(
       async () => {
         const entered = await this.enteredAmount();
@@ -88,7 +85,6 @@ class CalculatorPage {
       `Send amount was not updated to ${amount}`
     );
 
-    // Wait until the received amount changes
     const updatedReceived =
       await this.waitForReceivedAmountToChange(previousReceived);
 
@@ -98,6 +94,7 @@ class CalculatorPage {
 
     return updatedReceived;
   }
+
   async enteredAmount() {
     const input = await this.amountInput();
 
@@ -168,7 +165,6 @@ class CalculatorPage {
 
     await trigger.click();
 
-    // Wait until the dropdown is actually open.
     await this.driver.wait(
       async () => {
         return (await trigger.getAttribute('aria-expanded')) === 'true';
@@ -184,10 +180,10 @@ class CalculatorPage {
 
   async selectHaiti() {
 
-    // STEP 1: Open destination dropdown.
+    // Open destination dropdown
     await this.openDestinationDropdown();
 
-    // STEP 2: Search for Haiti if search input is available.
+    // Search for Haiti
     const search = await visibleOrNull(this.driver, [
       By.css('input[placeholder*="Search" i]'),
       By.css('input[placeholder*="country" i]'),
@@ -197,10 +193,10 @@ class CalculatorPage {
 
     if (search) {
       await search.click();
-      await search.sendKeys('Haiti');
+      await search.sendKeys('Hait');
     }
 
-    // STEP 3: Select Haiti from country list.
+    // Select Haiti
     const countryOption = await waitForVisible(this.driver, [
       By.xpath(
         "//*[@role='option' and " +
@@ -221,8 +217,7 @@ class CalculatorPage {
 
     await countryOption.click();
 
-    // STEP 4: Select HTG (Haitian Gourde).
-
+    // Select HTG currency
     const htgLocator = By.xpath(
       "//*[@role='dialog']//*[normalize-space(.)='HTG']" +
       "/ancestor::*[self::button or @role='option'][1]"
@@ -260,18 +255,14 @@ class CalculatorPage {
       'HTG currency option is not ready for interaction'
     );
 
-    // Diagnostic information
     console.log(
       'HTG option:',
       await currencyOption.getAttribute('outerHTML')
     );
 
-    // Click the actual currency option
     await currencyOption.click();
 
-    // STEP 5: Verify HTG is selected in the calculator
-    // and the destination dialog has closed.
-
+    // Verify destination currency selection
     await this.driver.wait(
       async () => {
         const trigger = await this.driver.findElement(
@@ -286,31 +277,6 @@ class CalculatorPage {
       10000,
       'HTG was not selected or destination dropdown remains open'
     );
-
-    // STEP 6: Ensure no visible dialog intercepts
-    // subsequent interactions with the calculator.
-
-    await this.driver.wait(
-      async () => {
-        const dialogs = await this.driver.findElements(
-          By.css('[role="dialog"]')
-        );
-
-        for (const dialog of dialogs) {
-          try {
-            if (await dialog.isDisplayed()) {
-              return false;
-            }
-          } catch {
-            // Dialog may have been removed during the animation.
-          }
-        }
-
-        return true;
-      },
-      10000,
-      'Destination dialog is still visible after selecting HTG'
-    );
   }
 
   // =========================================================
@@ -319,11 +285,9 @@ class CalculatorPage {
 
   async visibleExchangeRate() {
 
-    // Use the exchange rate displayed in the calculator.
     const bodyText = await this.driver
       .findElement(By.tagName('body'))
       .getText();
-    // TEMPORARY DEBUG: Inspect the actual quote displayed by RIA.
 
     const quoteIndex = bodyText.search(
       /Quote details|Your first transfer|You send|Detalles de la cotización/i
