@@ -1,0 +1,104 @@
+{
+  "info": {
+    "name": "RIA QA Engineer - API Challenge",
+    "description": "API validation required by RIA coding challenge: GET posts and POST httpbin echo.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GET | Posts - status and content validation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('GET responds with HTTP 200', () => {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const posts = pm.response.json();",
+              "",
+              "pm.test('Response is a non-empty array of posts', () => {",
+              "  pm.expect(posts).to.be.an('array').that.is.not.empty;",
+              "});",
+              "",
+              "pm.test('Every post has a non-empty title and body', () => {",
+              "  const valid = posts.every(post =>",
+              "    typeof post.title === 'string' && post.title.trim().length > 0 &&",
+              "    typeof post.body === 'string' && post.body.trim().length > 0",
+              "  );",
+              "  pm.expect(valid, 'All titles and bodies must have content').to.be.true;",
+              "});",
+              "",
+              "pm.test('No title or body contains the word zombie (case-insensitive)', () => {",
+              "  const invalid = posts.filter(post =>",
+              "    /\\bzombie\\b/i.test(String(post.title)) || /\\bzombie\\b/i.test(String(post.body))",
+              "  );",
+              "  pm.expect(invalid, 'Posts containing zombie').to.be.empty;",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://jsonplaceholder.typicode.com/posts/",
+          "protocol": "https",
+          "host": ["jsonplaceholder", "typicode", "com"],
+          "path": ["posts", ""]
+        }
+      }
+    },
+    {
+      "name": "POST | Toppings - status and payload validation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('POST responds with HTTP 200 or 201', () => {",
+              "  pm.expect([200, 201]).to.include(pm.response.code);",
+              "});",
+              "",
+              "const response = pm.response.json();",
+              "const payload = response.json; // httpbin echoes parsed request JSON under `json`",
+              "",
+              "pm.test('POST response echoes a JSON request body', () => {",
+              "  pm.expect(payload).to.be.an('object');",
+              "});",
+              "",
+              "pm.test('Toppings are exactly bacon, cheese, and mushroom', () => {",
+              "  pm.expect(payload.topping).to.be.an('array').with.lengthOf(3);",
+              "  pm.expect(new Set(payload.topping).size).to.equal(3);",
+              "  pm.expect(payload.topping).to.have.members(['bacon', 'cheese', 'mushroom']);",
+              "});",
+              "",
+              "pm.test('Toppings do not include chicken', () => {",
+              "  pm.expect(payload.topping.map(item => String(item).toLowerCase())).to.not.include('chicken');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json", "type": "text" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"student\": \"Tim Allen\",\n  \"email_address\": \"tim@homeimprovement.com\",\n  \"phone\": \"(408) 8674530\",\n  \"current_grade\": \"B+\",\n  \"topping\": [\n    \"bacon\",\n    \"cheese\",\n    \"mushroom\"\n  ]\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "https://httpbin.org/post",
+          "protocol": "https",
+          "host": ["httpbin", "org"],
+          "path": ["post"]
+        }
+      }
+    }
+  ]
+}

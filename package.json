@@ -1,0 +1,15 @@
+{
+  "name": "ria-qa-automation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RIA Money Transfer QA coding challenge - Selenium E2E and Postman API tests",
+  "scripts": {
+    "test": "mocha \"tests/**/*.spec.js\" --timeout 45000 --reporter spec",
+    "test:calculator": "mocha tests/calculator.spec.js --timeout 45000 --reporter spec",
+    "test:registration": "mocha tests/registration.spec.js --timeout 45000 --reporter spec"
+  },
+  "devDependencies": {
+    "mocha": "^11.0.0",
+    "selenium-webdriver": "^4.30.0"
+  }
+}
